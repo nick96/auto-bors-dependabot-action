@@ -1,0 +1,15 @@
+
+name: Auto-approve
+on:
+  pull_request:
+    types: [ labeled ]
+
+jobs:
+  approve:
+    if: ${{ github.event.label.name == 'dependencies' }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: nick96/auto-bors-dependabot-action
+        env:
+          GITHUB_TOKEN: ${{ secrets.AUTO_APPROVE_TOKEN }}
+          GITHUB_REPOSITORY: ${{ github.event.repository.name }}
