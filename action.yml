@@ -1,0 +1,15 @@
+name: 'Auto bors dependabot'
+description: 'Automatically bors r+ PRs created by dependabot'
+inputs:
+  token:
+    description: 'GitHub API token, used to comment on the PRs. Uses GITHUB_TOKEN if not provided.'
+    default: ''
+  repository: 
+    description: 'Name of this repository. Uses GITHUB_REPOSITORY by default.'
+    default: ''
+runs:
+  using: 'docker'
+  image: 'Dockerfile'
+  env:
+    GITHUB_TOKEN: ${{ env.GITHUB_TOKEN }}
+    GITHUB_REPOSITORY: ${{ env.GITHUB_REPOSITORY }}
