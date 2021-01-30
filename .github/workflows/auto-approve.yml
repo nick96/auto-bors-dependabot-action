@@ -13,5 +13,5 @@ jobs:
     steps:
       - uses: nick96/auto-bors-dependabot-action@master
         with:
-          repository: ${{ github.event.repository }}
+          repository: ${{ github.repository }}
           pull_request: ${{ github.event.number }}
