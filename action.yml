@@ -10,6 +10,3 @@ inputs:
 runs:
   using: 'docker'
   image: 'Dockerfile'
-  env:
-    GITHUB_TOKEN: ${{ GITHUB_TOKEN }}
-    GITHUB_REPOSITORY: ${{ GITHUB_REPOSITORY }}
