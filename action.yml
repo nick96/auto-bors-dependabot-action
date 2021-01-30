@@ -3,10 +3,14 @@ description: 'Automatically bors r+ PRs created by dependabot'
 inputs:
   token:
     description: 'GitHub API token, used to comment on the PRs. Uses GITHUB_TOKEN if not provided.'
+    require: false
     default: ''
   repository: 
-    description: 'Name of this repository. Uses GITHUB_REPOSITORY by default.'
-    default: ''
+    description: 'Name of this repository. Should be of the form <owner>/<repo>.'
+    require: true
+  pull_request:
+    description: 'Pull request number to auto-approve if the conditions are met.'
+    require: true
 runs:
   using: 'docker'
   image: 'Dockerfile'

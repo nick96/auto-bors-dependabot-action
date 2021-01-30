@@ -6,22 +6,23 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"strconv"
 	"strings"
 
 	"github.com/google/go-github/v32/github"
 	"golang.org/x/oauth2"
 )
 
-
 func main() {
 	log.Printf("environment: %v", os.Environ())
 	token := getToken()
 	owner, repo := getOwnerAndRepo()
+	prNumber := getPRNumber()
 
 	ctx := context.Background()
 	tokenSrc := oauth2.StaticTokenSource(&oauth2.Token{AccessToken: token})
 	client := oauth2.NewClient(ctx, tokenSrc)
-	if err := run(ctx, client, owner, repo, 0, "dependencies", "bors r+"); err != nil {
+	if err := run(ctx, client, owner, repo, prNumber, "dependencies", "bors r+"); err != nil {
 		workflowFatalLog("Failed to run action: %v", err)
 	}
 }
@@ -42,25 +43,29 @@ func getToken() string {
 }
 
 func getOwnerAndRepo() (string, string) {
-	getParts := func(name string) (string, string) {
-		nameParts := strings.Split(name, "/")
-		if len(nameParts) != 2 {
-			workflowFatalLog("Expected repository name to be of the form <owner>/<repo>, got '%s'", name)
-		}
-		return nameParts[0], nameParts[1]
-	}
-
 	name := os.Getenv("INPUT_REPOSITORY")
-	if strings.TrimSpace(name) != "" {
-		return getParts(name)
-	}
-
-	name = os.Getenv("GITHUB_REPOSITORY")
 	if strings.TrimSpace(name) == "" {
-		workflowFatalLog("Did not find GITHUB_REPOSITORY env var")
+		workflowFatalLog("repository input required")
 	}
 
-	return getParts(name)
+	nameParts := strings.Split(name, "/")
+	if len(nameParts) != 2 {
+		workflowFatalLog("Expected repository name to be of the form <owner>/<repo>, got '%s'", name)
+	}
+	return nameParts[0], nameParts[1]
+}
+
+func getPRNumber() int {
+	inputValue := os.Getenv("INPUT_PULL_REQUEST")
+	if strings.TrimSpace(inputValue) == "" {
+		workflowFatalLog("pull_request input required")
+	}
+
+	prNumber, err := strconv.Atoi(inputValue)
+	if err != nil {
+		workflowFatalLog("pull_request input must be an integer, got %s", inputValue)
+	}
+	return prNumber
 }
 
 func run(ctx context.Context, httpClient *http.Client, owner string, repo string, prNumber int, markerLabel string, comment string) error {
@@ -79,10 +84,10 @@ func run(ctx context.Context, httpClient *http.Client, owner string, repo string
 
 	if !isLabeled {
 		workflowDebugLog("PR %d in %s/%s is not labeled with marker label '%s'", prNumber, owner, repo, markerLabel)
-		return nil	
+		return nil
 	}
 
-	issueComment := &github.IssueComment {
+	issueComment := &github.IssueComment{
 		Body: &comment,
 	}
 	_, _, err = client.Issues.CreateComment(ctx, owner, repo, prNumber, issueComment)
