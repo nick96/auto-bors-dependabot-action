@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
+	"log"
 	"net/http"
 	"os"
 	"strings"
@@ -13,6 +14,7 @@ import (
 
 
 func main() {
+	log.Printf("environment: %v", os.Environ())
 	token := getToken()
 	owner, repo := getOwnerAndRepo()
 
